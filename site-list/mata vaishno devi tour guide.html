@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaishno Devi · Yatra Route Map</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #faf3e8 0%, #f7ede1 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* main card – UI container */
+        .yatra-card {
+            max-width: 780px;
+            width: 100%;
+            background: #fffffffa;
+            backdrop-filter: blur(2px);
+            border-radius: 48px 48px 40px 40px;
+            box-shadow: 0 30px 50px -20px rgba(160, 100, 30, 0.25),
+                        0 10px 25px -8px rgba(0, 0, 0, 0.1),
+                        inset 0 0 0 1px rgba(255, 215, 140, 0.4);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        /* header — saffron gradient */
+        .header {
+            background: linear-gradient(135deg, #ff9933 0%, #e87c1e 100%);
+            padding: 28px 32px 22px 32px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::after {
+            content: "⛰️";
+            position: absolute;
+            right: 20px;
+            bottom: -8px;
+            font-size: 80px;
+            opacity: 0.15;
+            transform: rotate(8deg);
+            pointer-events: none;
+        }
+
+        .header h1 {
+            font-size: 2.1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            line-height: 1.2;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        .header h1 span {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 100px;
+            padding: 6px 12px 4px 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(4px);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .subhead {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-weight: 500;
+            font-size: 1rem;
+            opacity: 0.95;
+            gap: 8px 18px;
+        }
+
+        .route-badge {
+            background: rgba(255, 255, 255, 0.22);
+            padding: 4px 16px;
+            border-radius: 30px;
+            backdrop-filter: blur(4px);
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* toggle strip */
+        .toggle-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 28px 10px 28px;
+            border-bottom: 1px solid #f0e0d0;
+            background: #fffcf8;
+        }
+
+        .pill-toggle {
+            display: flex;
+            gap: 6px;
+            background: #f5ede4;
+            padding: 5px;
+            border-radius: 100px;
+        }
+
+        .pill-toggle button {
+            border: none;
+            background: transparent;
+            padding: 8px 22px;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #7a5a3a;
+            cursor: default;
+            transition: all 0.1s;
+            letter-spacing: 0.2px;
+        }
+
+        .pill-toggle .active {
+            background: white;
+            color: #d45d00;
+            box-shadow: 0 4px 8px rgba(220, 100, 0, 0.15);
+        }
+
+        .km-summary {
+            font-weight: 700;
+            color: #b85e0e;
+            background: #fff3e2;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* scrollable route list */
+        .route-container {
+            padding: 18px 28px 10px 28px;
+            max-height: 600px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #e6c8a6 #fff3e2;
+        }
+
+        .route-container::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .route-container::-webkit-scrollbar-track {
+            background: #fff3e2;
+            border-radius: 10px;
+        }
+
+        .route-container::-webkit-scrollbar-thumb {
+            background: #e6b888;
+            border-radius: 10px;
+        }
+
+        /* each stop item */
+        .stop-item {
+            display: flex;
+            align-items: stretch;
+            gap: 14px;
+            position: relative;
+            padding-bottom: 6px;
+        }
+
+        /* left column – dot + connecting line */
+        .marker-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 32px;
+            flex-shrink: 0;
+        }
+
+        .dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            border: 4px solid #ff9933;
+            box-shadow: 0 0 0 2px #ffffff, 0 4px 10px rgba(200, 120, 20, 0.3);
+            z-index: 2;
+            transition: 0.1s;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .dot.start {
+            border-color: #2e7d32;
+            background: #e8f5e9;
+            box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px rgba(46, 125, 50, 0.2);
+        }
+
+        .dot.mid {
+            border-color: #f39c12;
+            background: #fff1e0;
+        }
+
+        .dot.bhawan {
+            border-color: #d45d00;
+            background: #ffe8d4;
+            box-shadow: 0 0 0 3px rgba(212, 93, 0, 0.2), 0 0 0 6px rgba(212, 93, 0, 0.1);
+        }
+
+        .dot.bhairon {
+            border-color: #b8860b;
+            background: #fef7e0;
+            box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.25), 0 0 0 6px rgba(184, 134, 11, 0.1);
+        }
+
+        /* vertical dashed line */
+        .connector {
+            width: 0;
+            flex: 1;
+            min-height: 30px;
+            border-left: 3px dashed #ffb366;
+            margin: 2px 0 2px 0;
+            position: relative;
+            opacity: 0.8;
+        }
+
+        .connector.with-distance {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin: 4px 0;
+            min-height: 40px;
+        }
+
+        /* distance pill inside connector */
+        .distance-pill {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+            top: 50%;
+            background: #fff5e9;
+            border: 1.5px solid #f0c8a0;
+            color: #a5590e;
+            font-weight: 700;
+            font-size: 0.7rem;
+            padding: 3px 12px;
+            border-radius: 100px;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 6px rgba(200, 130, 30, 0.1);
+            backdrop-filter: blur(2px);
+            z-index: 5;
+        }
+
+        /* right column – stop info */
+        .info-col {
+            flex: 1;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 10px 18px 10px 18px;
+            margin-bottom: 6px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02), 0 0 0 1px #f5e5d5;
+            transition: all 0.15s ease;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px 8px;
+        }
+
+        .stop-name {
+            font-weight: 700;
+            font-size: 1.08rem;
+            color: #2b1a0a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.2px;
+        }
+
+        .stop-name .emoji-icon {
+            font-size: 1.2rem;
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.1));
+        }
+
+        .elevation {
+            font-size: 0.7rem;
+            color: #9b7a5c;
+            font-weight: 500;
+            background: #faf2e9;
+            padding: 4px 10px;
+            border-radius: 30px;
+            white-space: nowrap;
+        }
+
+        .cumulative-km {
+            font-weight: 700;
+            color: #c9620e;
+            background: #fff1e0;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .features {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 0.75rem;
+            color: #7a5a3a;
+            margin-top: 2px;
+            flex-basis: 100%;
+        }
+
+        .feature-chip {
+            background: #f9efe4;
+            padding: 2px 10px;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+        }
+
+        /* special styling for Bhawan card */
+        .info-col.bhawan-card {
+            background: linear-gradient(105deg, #fff5e6 0%, #ffe8d4 100%);
+            border-left: 4px solid #d45d00;
+            box-shadow: 0 4px 12px rgba(212, 93, 0, 0.1), 0 0 0 1px #ffd9b3;
+        }
+
+        .info-col.bhairon-card {
+            background: linear-gradient(105deg, #fef9e7 0%, #fcf0d5 100%);
+            border-left: 4px solid #b8860b;
+            box-shadow: 0 4px 12px rgba(184, 134, 11, 0.1), 0 0 0 1px #f0dba0;
+        }
+
+        /* legend bar */
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 22px;
+            background: #fffbf5;
+            padding: 16px 24px;
+            border-top: 1px solid #f0e0d0;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #7a5a3a;
+            letter-spacing: 0.2px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-icon {
+            font-size: 1.2rem;
+        }
+
+        /* bottom total */
+        .total-footer {
+            background: #fff4ea;
+            padding: 12px 32px 18px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px dashed #e6c8a6;
+            font-weight: 600;
+            color: #4d2e14;
+        }
+
+        .total-footer .total-km {
+            background: #d45d00;
+            color: white;
+            padding: 6px 20px;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 10px rgba(212, 93, 0, 0.3);
+        }
+
+        /* small responsive */
+        @media (max-width: 550px) {
+            .header {
+                padding: 20px 18px;
+            }
+            .header h1 {
+                font-size: 1.6rem;
+            }
+            .route-container {
+                padding: 14px 16px;
+            }
+            .info-col {
+                padding: 8px 12px;
+            }
+            .stop-name {
+                font-size: 0.95rem;
+            }
+            .elevation {
+                font-size: 0.6rem;
+                padding: 3px 8px;
+            }
+            .cumulative-km {
+                font-size: 0.75rem;
+            }
+            .distance-pill {
+                font-size: 0.6rem;
+                padding: 2px 8px;
+            }
+            .legend-bar {
+                gap: 14px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="yatra-card">
+        <!-- header -->
+        <div class="header">
+            <h1>
+                ⛰️ Vaishno Devi
+                <span>🗺️ Yatra Map</span>
+            </h1>
+            <div class="subhead">
+                <div class="route-badge">🚩 Katra → Bhawan → Bhairon</div>
+                <div class="route-badge">📏 14.5 km · one way</div>
+            </div>
+        </div>
+
+        <!-- UI toggle (static demo) -->
+        <div class="toggle-strip">
+            <div class="pill-toggle">
+                <button class="active">Classic Route</button>
+                <button>Tarakote Marg</button>
+            </div>
+            <div class="km-summary">
+                <span>⬆️ 14.5 km</span>
+            </div>
+        </div>
+
+        <!-- scrollable route -->
+        <div class="route-container">
+
+            <!-- 1. KATRA (start) -->
+            <div class="stop-item">
+                <div class="marker-col">
+                    <div class="dot start"></div>
+                    <div class="connector with-distance">
+                        <span class="distance-pill">1 km</span>
+                    </div>
+                </div>
+                <div class="info-col">
+                    <div class="stop-name">
+                        <span class="emoji-icon">🏁</span> Katra
+                    </div>
+                    <span class="elevation">853 m</span>
+                    <span class="cumulative-km">0 km</span>
+                    <div class="features">
+                        <span class="feature-chip">🪪 RFID counter</span>
+                        <span class="feature-chip">🚌 Bus stand</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. BANGANGA -->
+            <div class="stop-item">
+                <div class="marker-col">
+                    <div class="dot"></div>
+                    <div class="connector with-distance">
+                        <span class="distance-pill">1.5 km</span>
+                    </div>
+                </div>
+                <div class="info-col">
+                    <div class="stop-name">
+                        <span class="emoji-icon">💧</span> Banganga
+                    </div>
+                    <span class="elevation">1,030 m</span>
+                    <span class="cumulative-km">1 km</span>
+                    <div class="features">
+                        <span class="feature-chip">🔐 Security check</span>
+                        <span class="feature-chip">🚻 Restrooms</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. CHARAN PADUKA -->
+            <div class="stop-item">
+                <div class="marker-col">
+                    <div class="dot"></div>
+                    <div class="connector with-distance">
+                        <span class="distance-pill">3.5 km</span>
+                    </div>
+                </div>
+                <div class="info-col">
+                    <div class="stop-name">
+                        <span class="emoji-icon">👣</span> Charan Paduka
+                    </div>
+                    <span class="elevation">1,463 m</span>
+                    <span class="cumulative-km">2.5 km</span>
+                    <div class="features">
+                        <span class="feature-chip">🛕 Holy footprints</span>
+                        <span class="feature-chip">🧃 Water point</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. ADHKUWARI (midpoint) -->
+            <div class="stop-item">
+                <div class="marker-col">
+                    <div class="dot mid"></div>
+                    <div class="connector with-distance">
+                        <span class="distance-pill">2.5 km</span>
+                    </div>
+                </div>
+                <div class="info-col">
+                    <div class="stop-name">
+                        <span class="emoji-icon">🏠</span> Adhkuwari
+                    </div>
+                    <span class="elevation">1,561 m</span>
+                    <span class="cumulative-km">6 km</span>
+                    <div class="features">
+                        <span class="feature-chip">🛏️ Rest houses</span>
+                        <span class="feature-chip">🚡 Pony end</span>
+                        <span class="feature-chip">🕳️ Cave temple</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. HIMKOTI -->
+            <div class="stop-item">
+                <div class="marker-col">
+                    <div class="dot"></div>
+                    <div class="connector with-distance">
+                        <span class="distance-pill">1 km</span>
+                    </div>
+                </div>
+                <div class="info-col">
+                    <div class="stop-name">
+                        <span class="emoji-icon">⛰️</span> Himkoti
+                    </div>
+                    <span class="elevation">1,890 m</span>
+                    <span class="cumulative-km">8.5 km</span>
+                    <div class="features">
+                        <span class="feature-chip">🚡 Battery car</span>
+                        <span class="feature-chip">🍽️ Food court</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. SANJICHHAT -->
+            <div class="stop-item">
+                <div class="marker-col">
+                    <div class="dot"></div>
+                    <div class="connector with-distance">
+                        <span class="distance-pill">3.5 km</span>
+                    </div>
+                </div>
+                <div class="info-col">
+                    <div class="stop-name">
+                        <span class="emoji-icon">🚁</span> Sanjichhat
+                    </div>
+                    <span class="elevation">1,585 m</span>
+                    <span class="cumulative-km">9.5 km</span>
+                    <div class="features">
+                        <span class="feature-chip">🚁 Helipad</span>
+                        <span class="feature-chip">🏥 Medical aid</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. BHAWAN (main shrine) -->
+            <div class="stop-item">
+                <div class="marker-col">
+                    <div class="dot bhawan"></div>
+                    <div class="connector with-distance">
+                        <span class="distance-pill">1.5 km</span>
+                    </div>
+                </div>
+                <div class="info-col bhawan-card">
+                    <div class="stop-name">
+                        <span class="emoji-icon">🛕</span> Bhawan (Main Shrine)
+                    </div>
+                    <span class="elevation">1,585 m</span>
+                    <span class="cumulative-km">13 km</span>
+                    <div class="features">
+                        <span class="feature-chip">🪔 Darshan</span>
+                        <span class="feature-chip">📿 Bhaint</span>
+                        <span class="feature-chip">♿ Accessible</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. BHAIRON TEMPLE (end) -->
+            <div class="stop-item">
+                <div class="marker-col">
+                    <div class="dot bhairon"></div>
+                    <!-- no connector after last -->
+                </div>
+                <div class="info-col bhairon-card">
+                    <div class="stop-name">
+                        <span class="emoji-icon">⭐</span> Bhairon Temple
+                    </div>
+                    <span class="elevation">2,017 m</span>
+                    <span class="cumulative-km">14.5 km</span>
+                    <div class="features">
+                        <span class="feature-chip">🚡 Ropeway (5 min)</span>
+                        <span class="feature-chip">🏁 Yatra complete</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- legend -->
+        <div class="legend-bar">
+            <div class="legend-item"><span class="legend-icon">🚁</span> Helipad</div>
+            <div class="legend-item"><span class="legend-icon">🚡</span> Battery car / ropeway</div>
+            <div class="legend-item"><span class="legend-icon">🛕</span> Darshan</div>
+            <div class="legend-item"><span class="legend-icon">♿</span> Barrier-free</div>
+            <div class="legend-item"><span class="legend-icon">🏠</span> Rest / stay</div>
+        </div>
+
+        <!-- total distance -->
+        <div class="total-footer">
+            <span>⛰️ Total pilgrimage (one way)</span>
+            <span class="total-km">14.5 km</span>
+        </div>
+    </div>
+</body>
+</html>
